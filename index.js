@@ -24,6 +24,24 @@ function displayLaundryStatus() {
     console.table(cleanLaundry);
 }
 
+// Check Inventory Status (Summary)
+function checkInventory() {
+    console.log("=== INVENTORY CHECK ==="); // Header for clarity
+
+    displayMaterials();
+    displayLaundryStatus();
+
+    let totalMaterials = materials.reduce((sum, m) => sum + m.qty, 0);
+    console.log(`Total items in stock: ${totalMaterials}`);
+
+    let totalUnclean = uncleanLaundry.reduce((sum, l) => sum + l.qty, 0);
+    console.log(`Total unclean laundry bags: ${totalUnclean}`);
+
+    let totalClean = cleanLaundry.reduce((sum, l) => sum + l.qty, 0);
+    console.log(`Total clean laundry bags: ${totalClean}`);
+    console.log("=======================");
+}
+
 // Add New Material
 function addMaterial(name, qty, price) {
     let newMaterial = {
