@@ -1,0 +1,8 @@
+1. inventory for material, eg. detergent, plastic bag, fabcon.
+2. inventory for cleaned clothes, with names from clients, 
+   quantity of the laundry (1 plastic bag of cleaned laundry should 
+   be at 7kg max). along with how many material was used 
+   (1 cleaned laundry would use 2 fabcons, 1 detergent, and 1 plastic bag)
+3. inventory for not yet cleaned clothes, same things for the cleaned one
+
+so most likely 3 arrays
