@@ -168,5 +168,3 @@ function filterMaterialsByQty(minQty) {
     console.log(`Filtered Materials with quantity >= ${minQty}:`);
     console.table(filtered);
 }
-
-// PROBLEM 2
