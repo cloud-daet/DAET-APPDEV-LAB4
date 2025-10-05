@@ -8,3 +8,12 @@
 so most likely 3 arrays
 a way to delete, add, update each of the three array.
 a way to move the uncleaned clothes to cleaned clothes array.
+what i need are: 
+a way to update the materials and laundry 
+a way to delete and add 
+a way to check inventory 
+a sorting method via quantity 
+a way to filter, low stock, status of laundry 
+materials should have name, qty, price laundry 
+should have client name, qty of laundry (total kg of laundry divided by max_weight), status (clean/pending)
+there's only 3 materials that will most likely be used (detergent, fabcon, laundry bag)
