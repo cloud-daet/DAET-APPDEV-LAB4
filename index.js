@@ -10,10 +10,18 @@ let uncleanLaundry = []; // Array to hold unclean laundry
 // Maximum weight limit for laundry in kg
 const MAX_WEIGHT = 7;
 
-// Display Materials in Table
+// Display Materials in Table (console)
 function displayMaterials() {
     console.log("Materials:");
     console.table(materials);
+}
+
+// Display Laundry Status (console)
+function displayLaundryStatus() {
+    console.log("Unclean/Pending Laundry:");
+    console.table(uncleanLaundry);
+    console.log("Clean Laundry:");
+    console.table(cleanLaundry);
 }
 
 // Add New Material
@@ -54,3 +62,27 @@ function updateMaterialQty(name, newQty) {
     console.log(`Material ${name} not found.`);
   }
 }
+
+// Mark Laundry as Cleaned
+function markAsClean(clientName) {
+    let laundry = uncleanLaundry.find(l => l.clientName === clientName);
+    if (!laundry) {
+        console.log(`No pending laundry found for ${clientName}.`);
+        return;
+    }
+    // Check if enough materials are available
+    if (materials[0].qty < laundry.qty || materials[1].qty < laundry.qty) {
+        console.log(`Not enough materials to clean ${clientName}'s laundry.`);
+        return;
+    }
+    // Deduct materials
+    materials[0].qty -= laundry.qty; // Detergent
+    materials[1].qty -= laundry.qty * 2; // Fabric Conditioner x2
+    materials[2].qty -= laundry.qty; // Laundry Bag
+
+    // Move laundry to clean list
+    cleanLaundry.push({ clientName, qty: laundry.qty, status: "Cleaned" });
+    uncleanLaundry = uncleanLaundry.filter(l => l.clientName !== clientName);
+    console.log(`${clientName}'s laundry marked as cleaned.`);
+}
+
