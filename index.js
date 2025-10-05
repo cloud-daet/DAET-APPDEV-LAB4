@@ -44,7 +44,7 @@ function addLaundry(clientName, totalKg) {
     console.log(`${clientName}'s laundry (${bags} bag/s) added.`);
 }
 
-// Updaet Material Quantity
+// Update Material Quantity
 function updateMaterialQty(name, newQty) {
   let material = materials.find(m => m.name === name);
   if (material) {
