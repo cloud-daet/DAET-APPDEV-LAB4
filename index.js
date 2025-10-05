@@ -70,11 +70,16 @@ function markAsClean(clientName) {
         console.log(`No pending laundry found for ${clientName}.`);
         return;
     }
-    // Check if enough materials are available
-    if (materials[0].qty < laundry.qty || materials[1].qty < laundry.qty) {
+    // Check stock availability
+    if (
+        materials[0].qty < laundry.qty ||
+        materials[1].qty < laundry.qty * 2 ||
+        materials[2].qty < laundry.qty
+    ) {
         console.log(`Not enough materials to clean ${clientName}'s laundry.`);
         return;
     }
+
     // Deduct materials
     materials[0].qty -= laundry.qty; // Detergent
     materials[1].qty -= laundry.qty * 2; // Fabric Conditioner x2
