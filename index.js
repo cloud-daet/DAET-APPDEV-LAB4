@@ -86,3 +86,56 @@ function markAsClean(clientName) {
     console.log(`${clientName}'s laundry marked as cleaned.`);
 }
 
+// Delete Material
+function deleteMaterial(name) {
+    let index = materials.findIndex(m => m.name === name);
+    console.log(`${name} material deleted.`);
+}
+
+// Delete Laundry Entry
+function deleteLaundry(clientName) {
+    uncleanLaundry = uncleanLaundry.filter(l => l.clientName !== clientName);
+    cleanLaundry = cleanLaundry.filter(l => l.clientName !== clientName);
+    console.log(`${clientName}'s laundry entry deleted.`);
+}
+
+// Sort Materials By Quantity
+function sortMaterialsByQty() {
+    materials.sort((a, b) => a.qty - b.qty);
+    console.log("Materials sorted by quantity.");
+}
+
+// Sort Laundry By Client Name
+function sortLaundryByClientName() {
+    uncleanLaundry.sort((a, b) => a.clientName.localeCompare(b.clientName));
+    cleanLaundry.sort((a, b) => a.clientName.localeCompare(b.clientName));
+    console.log("Laundry sorted by client name.");
+}
+
+// Sort Laundry By Quantity
+function sortLaundryByQty() {
+    uncleanLaundry.sort((a, b) => a.qty - b.qty);
+    cleanLaundry.sort((a, b) => a.qty - b.qty);
+    console.log("Laundry sorted by quantity.");
+}
+
+// Sort Laundry By Status
+function sortLaundryByStatus() {
+    uncleanLaundry.sort((a, b) => a.status.localeCompare(b.status));
+    cleanLaundry.sort((a, b) => a.status.localeCompare(b.status));
+    console.log("Laundry sorted by status.");
+}
+
+// Filter Materials By Name
+function filterMaterialsByName(name) {
+    let filtered = materials.filter(m => m.name.toLowerCase().includes(name.toLowerCase()));
+    console.log(`Filtered Materials by name "${name}":`);
+    console.table(filtered);
+}
+
+// Filter Materials By Quantity
+function filterMaterialsByQty(minQty) {
+    let filtered = materials.filter(m => m.qty >= minQty);
+    console.log(`Filtered Materials with quantity >= ${minQty}:`);
+    console.table(filtered);
+}
