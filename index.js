@@ -1,4 +1,4 @@
-// Initialize empty arrays for different categories
+// Arrays to hold data
 let materials = [ // Array to hold materials
   { name: "Detergent", qty: 20, price: 15 },
   { name: "Fabric Conditioner", qty: 20, price: 5 },
