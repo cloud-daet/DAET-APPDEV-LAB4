@@ -6,3 +6,5 @@
 3. inventory for not yet cleaned clothes, same things for the cleaned one
 
 so most likely 3 arrays
+a way to delete, add, update each of the three array.
+a way to move the uncleaned clothes to cleaned clothes array.
