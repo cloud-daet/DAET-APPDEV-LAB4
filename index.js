@@ -1,3 +1,4 @@
+// PROBLEM 1
 // Arrays to hold data
 let materials = [ // Array to hold materials
   { name: "Detergent", qty: 20, price: 15 },
@@ -112,7 +113,12 @@ function markAsClean(clientName) {
 // Delete Material
 function deleteMaterial(name) {
     let index = materials.findIndex(m => m.name === name);
-    console.log(`${name} material deleted.`);
+    if (index !== -1) {
+        materials.splice(index, 1);
+        console.log(`${name} material deleted.`);
+    } else {
+        console.log(`${name} not found.`);
+    }
 }
 
 // Delete Laundry Entry
@@ -162,3 +168,5 @@ function filterMaterialsByQty(minQty) {
     console.log(`Filtered Materials with quantity >= ${minQty}:`);
     console.table(filtered);
 }
+
+// PROBLEM 2
