@@ -284,3 +284,5 @@ function checkInventory() {
   LaundryInventory.checkLaundryInventory();
   console.log("========================\n");
 }
+
+// DOM HANDLERS
