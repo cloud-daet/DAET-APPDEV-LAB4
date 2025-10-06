@@ -1,170 +1,286 @@
-// PROBLEM 1
-// Arrays to hold data
-let materials = [ // Array to hold materials
-  { name: "Detergent", qty: 20, price: 15 },
-  { name: "Fabric Conditioner", qty: 20, price: 5 },
-  { name: "Laundry Bag", qty: 20, price: 5 },
-];
-let cleanLaundry = []; // Array to hold clean laundry
-let uncleanLaundry = []; // Array to hold unclean laundry
-
 // Maximum weight limit for laundry in kg
 const MAX_WEIGHT = 7;
 
-// Display Materials in Table (console)
-function displayMaterials() {
-    console.log("Materials:");
-    console.table(materials);
-}
+const MaterialInventory = {
+    // Array to hold materials
+    materials: [ 
+        { name: "Detergent", qty: 20, price: 15 },
+        { name: "Fabric Conditioner", qty: 20, price: 8 },
+        { name: "Laundry Bag", qty: 20, price: 5 },
+    ],
 
-// Display Laundry Status (console)
-function displayLaundryStatus() {
-    console.log("Unclean/Pending Laundry:");
-    console.table(uncleanLaundry);
-    console.log("Clean Laundry:");
-    console.table(cleanLaundry);
-}
+    // Display Materials in Table (console)
+    displayMaterials() {
+        console.log("Materials:");
+        console.table(this.materials);
+    },
 
-// Check Inventory Status (Summary)
+    // Add New Material
+    addMaterial(name, qty, price) {
+        let newMaterial = {
+            name: name,
+            qty: qty,
+            price: price
+        };
+        this.materials.push(newMaterial);
+        console.log(`Added new material: ${name}, Quantity: ${qty}, Price: $${price}`);
+    },
+
+    // Add to existing Material
+    addToMaterial(name, additionalQty) {
+        let material = this.materials.find(m => m.name === name);
+        if (material) {
+            material.qty += additionalQty;
+            console.log(`Updated ${name} quantity to +${additionalQty}`);
+        } else {
+            console.log(`Material ${name} not found.`);
+        }  
+    },
+
+    // Update Material Quantity (used when laundry is processed)
+    updateMaterialQty(name, usedQty) {
+        let material = this.materials.find(m => m.name === name);
+        if (material) {
+            if (material.qty >= usedQty) {
+                material.qty -= usedQty;
+                console.log(`Used ${usedQty} of ${name}. New quantity: ${material.qty}`);
+            } else {
+                console.log(`Insufficient ${name} in stock. Available: ${material.qty}, Required: ${usedQty}`);
+            }
+        }
+    },
+
+    // Update Material Price
+    updateMaterialPrice(name, newPrice) {
+        let material = this.materials.find(m => m.name === name);
+        if (material) {
+            material.price = newPrice;
+            console.log(`Updated ${name} price to $${newPrice}`);
+        } else {
+            console.log(`Material ${name} not found.`);
+        }
+    },
+
+    // Delete Material
+    deleteMaterial(name) {
+        let index = this.materials.findIndex(m => m.name === name);
+        if (index !== -1) {
+            this.materials.splice(index, 1);
+            console.log(`Deleted material: ${name}`);
+        } else {
+            console.log(`Material ${name} not found.`);
+        }
+    },
+
+    // Sort Materials by Quantity
+    sortMaterialsByQty() {
+        this.materials.sort((a, b) => a.qty - b.qty);
+        console.log("Materials sorted by quantity.");
+    },
+
+    // Filter By Quantity
+    filterMaterialsByQty(threshold) {
+        let filtered = this.materials.filter(m => m.qty < threshold);
+        console.log(`Materials with quantity less than ${threshold}:`);
+        console.table(filtered);
+    },
+
+    // Filter By Name
+    filterMaterialsByName(name) {
+        let filtered = this.materials.filter(m => m.name.toLowerCase().includes(name.toLowerCase()));
+        console.log(`Filtered Materials by name "${name}":`);
+        console.table(filtered);
+    },
+
+    // Check Stock
+    checkInventory() {
+        let totalMaterials = this.materials.reduce((sum, m) => sum + m.qty, 0);
+        console.log(`Total items in stock: ${totalMaterials}`);
+    },
+};
+
+const LaundryInventory = {
+    uncleanLaundry: [], // Array to hold unclean laundry entries
+    cleanLaundry: [],   // Array to hold clean laundry entries
+
+    // Display Laundry in Table (console)
+    displayLaundry() {
+        console.log("Unclean Laundry:");
+        console.table(this.uncleanLaundry);
+        console.log("Clean Laundry:");
+        console.table(this.cleanLaundry);
+    },
+
+    // Display specific laundry status
+    displayLaundryByStatus(status) {
+        if (status === "unclean") {
+            console.log("Unclean Laundry:");
+            console.table(this.uncleanLaundry);
+        } else if (status === "clean") {
+            console.log("Clean Laundry:");
+            console.table(this.cleanLaundry);
+        } else {
+            console.log("Invalid status. Use 'unclean' or 'clean'.");
+        }
+    },
+
+    // Add New Laundry
+    addLaundry(clientName, totalKg) {
+        let bags = Math.ceil(totalKg / MAX_WEIGHT); // round up any remainder
+    this.uncleanLaundry.push({ clientName, kilos: totalKg, qty: bags, status: "Pending" });
+    console.log(`${clientName}'s laundry, ${totalKg}kg (${bags} bag/s) added.`);
+    },
+
+    // Mark Laundry as Clean
+    markLaundryAsClean(clientName) {
+        let laundry = this.uncleanLaundry.find(l => l.clientName === clientName);
+        if (!laundry) {
+            console.log(`No pending laundry found for ${clientName}.`);
+            return;
+        }
+
+        // Check stock availability using MaterialInventory
+        const detergent = MaterialInventory.materials.find(m => m.name === "Detergent");
+        const fabcon = MaterialInventory.materials.find(m => m.name === "Fabric Conditioner");
+        const bag = MaterialInventory.materials.find(m => m.name === "Laundry Bag");
+
+        if (
+            !detergent || detergent.qty < laundry.qty ||
+            !fabcon || fabcon.qty < laundry.qty * 2 ||
+            !bag || bag.qty < laundry.qty
+        ) {
+            console.log(`Not enough materials to clean ${clientName}'s laundry.`);
+            return;
+        }
+
+        // Deduct materials
+        MaterialInventory.updateMaterialQty("Detergent", laundry.qty);
+        MaterialInventory.updateMaterialQty("Fabric Conditioner", laundry.qty * 2);
+        MaterialInventory.updateMaterialQty("Laundry Bag", laundry.qty);
+
+        // Move laundry to clean list
+        this.cleanLaundry.push({ clientName, kilos: laundry.kilos, qty: laundry.qty, status: "Cleaned" });
+        this.uncleanLaundry = this.uncleanLaundry.filter(l => l.clientName !== clientName);
+        console.log(`${clientName}'s laundry marked as cleaned.`);
+    },
+
+    // Delete Laundry Entry
+    deleteLaundry(clientName) {
+        this.uncleanLaundry = this.uncleanLaundry.filter(l => l.clientName !== clientName);
+        this.cleanLaundry = this.cleanLaundry.filter(l => l.clientName !== clientName);
+        console.log(`${clientName}'s laundry entry deleted.`);
+    },
+
+    // Sort Laundry By Client Name
+    sortLaundryByClientName() {
+        this.uncleanLaundry.sort((a, b) => a.clientName.localeCompare(b.clientName));
+        this.cleanLaundry.sort((a, b) => a.clientName.localeCompare(b.clientName));
+        console.log("Laundry sorted by client name.");
+    },
+    
+    // Sort Laundry By Quantity
+    sortLaundryByQty() {
+        this.uncleanLaundry.sort((a, b) => a.qty - b.qty);
+        this.cleanLaundry.sort((a, b) => a.qty - b.qty);
+        console.log("Laundry sorted by quantity.");
+    },
+    
+    // Sort Laundry By Status
+    sortLaundryByStatus() {
+        this.uncleanLaundry.sort((a, b) => a.status.localeCompare(b.status));
+        this.cleanLaundry.sort((a, b) => a.status.localeCompare(b.status));
+        console.log("Laundry sorted by status.");
+    },
+
+    // Filter Laundry By Client Name
+    filterLaundryByName(clientName) {
+        let filteredUnclean = this.uncleanLaundry.filter(l => l.clientName.toLowerCase().includes(clientName.toLowerCase()));
+        let filteredClean = this.cleanLaundry.filter(l => l.clientName.toLowerCase().includes(clientName.toLowerCase()));
+        console.log(`Filtered Unclean Laundry by client name "${clientName}":`);
+        console.table(filteredUnclean);
+        console.log(`Filtered Clean Laundry by client name "${clientName}":`);
+        console.table(filteredClean);
+    },
+
+    // Filter Laundry By Quantity
+    filterLaundryByQty(threshold) {
+        let filteredUnclean = this.uncleanLaundry.filter(l => l.qty < threshold);
+        let filteredClean = this.cleanLaundry.filter(l => l.qty < threshold);
+        console.log(`Filtered Unclean Laundry with quantity less than ${threshold}:`);
+        console.table(filteredUnclean);
+        console.log(`Filtered Clean Laundry with quantity less than ${threshold}:`);
+        console.table(filteredClean);
+    },
+
+    // Display Laundry Inventory Count
+    checkLaundryInventory() {
+        let totalUnclean = this.uncleanLaundry.reduce((sum, l) => sum + l.qty, 0);
+        let totalClean = this.cleanLaundry.reduce((sum, l) => sum + l.qty, 0);
+        console.log(`Total unclean laundry bags: ${totalUnclean}`);
+        console.log(`Total clean laundry bags: ${totalClean}`);
+    },
+
+    // Checkout Cleaned Laundry
+    checkoutLaundry(clientName) {
+        const laundry = this.cleanLaundry.find(l => l.clientName === clientName);
+        if (!laundry) {
+            console.log(`No cleaned laundry found for ${clientName}.`);
+            return;
+        }
+
+        // Prices
+        const WASH_PRICE = 65;
+        const DRY_PRICE = 65;
+        const FOLD_PRICE = 30;
+        const SERVICE_FEE_PER_BAG = 196;
+
+        // Cycles (1 wash + 1 dry per bag)
+        const washCycles = laundry.qty;
+        const dryCycles = laundry.qty;
+        const washTotal = washCycles * WASH_PRICE;
+        const dryTotal = dryCycles * DRY_PRICE;
+        const foldTotal = laundry.qty * FOLD_PRICE;
+
+        // Materials used
+        const detergentUsed = laundry.qty;
+        const fabconUsed = laundry.qty * 2;
+        const bagUsed = laundry.qty;
+
+        // Get material prices
+        const detergent = MaterialInventory.materials.find(m => m.name === "Detergent");
+        const fabcon = MaterialInventory.materials.find(m => m.name === "Fabric Conditioner");
+        const bag = MaterialInventory.materials.find(m => m.name === "Laundry Bag");
+
+        const detergentPrice = detergent ? detergent.price * detergentUsed : 0;
+        const fabconPrice = fabcon ? fabcon.price * fabconUsed : 0;
+        const bagPrice = bag ? bag.price * bagUsed : 0;
+
+        // Service fee
+        const serviceFee = laundry.qty * SERVICE_FEE_PER_BAG;
+
+        // Total price
+        const totalPrice = washTotal + dryTotal + foldTotal + detergentPrice + fabconPrice + bagPrice + serviceFee;
+
+        // Output breakdown
+        console.log(`--- Checkout for ${clientName} ---`);
+        console.log(`Laundry Bags: ${laundry.qty} (max 7kg each)`);
+        console.log(`Wash Cycles: ${washCycles} x Php ${WASH_PRICE} = Php ${washTotal}`);
+        console.log(`Dry Cycles: ${dryCycles} x Php ${DRY_PRICE} = Php ${dryTotal}`);
+        console.log(`Fold Service: ${laundry.qty} x Php ${FOLD_PRICE} = Php ${foldTotal}`);
+        console.log(`Detergent Used: ${detergentUsed} x Php ${detergent ? detergent.price : 0} = Php ${detergentPrice}`);
+        console.log(`Fabric Conditioner Used: ${fabconUsed} x Php ${fabcon ? fabcon.price : 0} = Php ${fabconPrice}`);
+        console.log(`Laundry Bags Used: ${bagUsed} x Php ${bag ? bag.price : 0} = Php ${bagPrice}`);
+        console.log(`Service Fee: ${laundry.qty} x Php ${SERVICE_FEE_PER_BAG} = Php ${serviceFee}`);
+        console.log(`TOTAL: Php ${totalPrice}`);
+        console.log('-----------------------------');
+    }
+};
+
 function checkInventory() {
-    console.log("=== INVENTORY CHECK ==="); // Header for clarity
-
-    displayMaterials();
-    displayLaundryStatus();
-
-    let totalMaterials = materials.reduce((sum, m) => sum + m.qty, 0);
-    console.log(`Total items in stock: ${totalMaterials}`);
-
-    let totalUnclean = uncleanLaundry.reduce((sum, l) => sum + l.qty, 0);
-    console.log(`Total unclean laundry bags: ${totalUnclean}`);
-
-    let totalClean = cleanLaundry.reduce((sum, l) => sum + l.qty, 0);
-    console.log(`Total clean laundry bags: ${totalClean}`);
-    console.log("=======================");
-}
-
-// Add New Material
-function addMaterial(name, qty, price) {
-    let newMaterial = {
-        name: name,
-        qty: qty,
-        price: price
-    };
-    materials.push(newMaterial);
-    console.log(`Added new material: ${name}, Quantity: ${qty}, Price: $${price}`);
-}
-
-// Add to exsisting Material
-function addToMaterial(name, additionalQty) {
-    let material = materials.find(m => m.name === name);
-    if (material) {
-        material.qty += additionalQty;
-        console.log(`Updated ${name} quantity to +${additionalQty}`);
-    } else {
-        console.log(`Material ${name} not found.`);
-    }  
-}
-// Add New Laundry
-function addLaundry(clientName, totalKg) {
-    let bags = Math.ceil(totalKg / MAX_WEIGHT); // round up any remainder
-    uncleanLaundry.push({ clientName, qty: bags, status: "Pending" });
-    console.log(`${clientName}'s laundry (${bags} bag/s) added.`);
-}
-
-// Update Material Quantity
-function updateMaterialQty(name, newQty) {
-  let material = materials.find(m => m.name === name);
-  if (material) {
-    material.qty = newQty;
-    console.log(`${name} stock updated to ${newQty}.`);
-  } else {
-    console.log(`Material ${name} not found.`);
-  }
-}
-
-// Mark Laundry as Cleaned
-function markAsClean(clientName) {
-    let laundry = uncleanLaundry.find(l => l.clientName === clientName);
-    if (!laundry) {
-        console.log(`No pending laundry found for ${clientName}.`);
-        return;
-    }
-    // Check stock availability
-    if (
-        materials[0].qty < laundry.qty ||
-        materials[1].qty < laundry.qty * 2 ||
-        materials[2].qty < laundry.qty
-    ) {
-        console.log(`Not enough materials to clean ${clientName}'s laundry.`);
-        return;
-    }
-
-    // Deduct materials
-    materials[0].qty -= laundry.qty; // Detergent
-    materials[1].qty -= laundry.qty * 2; // Fabric Conditioner x2
-    materials[2].qty -= laundry.qty; // Laundry Bag
-
-    // Move laundry to clean list
-    cleanLaundry.push({ clientName, qty: laundry.qty, status: "Cleaned" });
-    uncleanLaundry = uncleanLaundry.filter(l => l.clientName !== clientName);
-    console.log(`${clientName}'s laundry marked as cleaned.`);
-}
-
-// Delete Material
-function deleteMaterial(name) {
-    let index = materials.findIndex(m => m.name === name);
-    if (index !== -1) {
-        materials.splice(index, 1);
-        console.log(`${name} material deleted.`);
-    } else {
-        console.log(`${name} not found.`);
-    }
-}
-
-// Delete Laundry Entry
-function deleteLaundry(clientName) {
-    uncleanLaundry = uncleanLaundry.filter(l => l.clientName !== clientName);
-    cleanLaundry = cleanLaundry.filter(l => l.clientName !== clientName);
-    console.log(`${clientName}'s laundry entry deleted.`);
-}
-
-// Sort Materials By Quantity
-function sortMaterialsByQty() {
-    materials.sort((a, b) => a.qty - b.qty);
-    console.log("Materials sorted by quantity.");
-}
-
-// Sort Laundry By Client Name
-function sortLaundryByClientName() {
-    uncleanLaundry.sort((a, b) => a.clientName.localeCompare(b.clientName));
-    cleanLaundry.sort((a, b) => a.clientName.localeCompare(b.clientName));
-    console.log("Laundry sorted by client name.");
-}
-
-// Sort Laundry By Quantity
-function sortLaundryByQty() {
-    uncleanLaundry.sort((a, b) => a.qty - b.qty);
-    cleanLaundry.sort((a, b) => a.qty - b.qty);
-    console.log("Laundry sorted by quantity.");
-}
-
-// Sort Laundry By Status
-function sortLaundryByStatus() {
-    uncleanLaundry.sort((a, b) => a.status.localeCompare(b.status));
-    cleanLaundry.sort((a, b) => a.status.localeCompare(b.status));
-    console.log("Laundry sorted by status.");
-}
-
-// Filter Materials By Name
-function filterMaterialsByName(name) {
-    let filtered = materials.filter(m => m.name.toLowerCase().includes(name.toLowerCase()));
-    console.log(`Filtered Materials by name "${name}":`);
-    console.table(filtered);
-}
-
-// Filter Materials By Quantity
-function filterMaterialsByQty(minQty) {
-    let filtered = materials.filter(m => m.qty >= minQty);
-    console.log(`Filtered Materials with quantity >= ${minQty}:`);
-    console.table(filtered);
+  console.log("\n=== FULL INVENTORY ===");
+  MaterialInventory.displayMaterials();
+  LaundryInventory.displayLaundry();
+  MaterialInventory.checkInventory();
+  LaundryInventory.checkLaundryInventory();
+  console.log("========================\n");
 }
