@@ -286,3 +286,21 @@ function checkInventory() {
 }
 
 // DOM HANDLERS
+const laundryForm = document.getElementById("LaundryForm");
+const laundryControls = document.getElementById("laundryControls");
+const listDiv = document.getElementById("list");
+const summaryDiv = document.getElementById("summary");
+
+laundryForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const clientName = document.getElementById("clientName").value;
+    const totalKg = parseFloat(document.getElementById("totalKg").value);
+
+    if (isNaN(totalKg) || totalKg <= 0) {
+        alert("Please enter a valid number for weight.");
+        return;
+    }
+
+    LaundryInventory.addLaundry(clientName, totalKg);
+});
+

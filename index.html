@@ -7,5 +7,27 @@
 </head>
 <body>
     <h2>Laundry Inventory System</h2>
+
+    <form id ="LaundryForm">
+        <input type="text" id="clientName" placeholder="Client Name" required>
+        <input type="number" id="totalKg" placeholder="Weigth (kg)" required step="0.001">
+        <button type="submit">Add Entry</button>
+    </form>
+
+    <div id = "LaundryControls">
+        <input type="text" id="searchInput" placeholder="Search client">
+        <button id="statusBtn">Mark as Clean</button>
+        <button id="deleteBtn">Delete Entry</button>
+        <button id="filterBtn">Filter</button>
+    </div>
+    
+    <!-- Displays table of laundry entries -->
+    <div id="list"></div> 
+    <!-- Idk what to put here yet -->
+    <div id="summary"></div> 
+
+    <br>
+    
 </body>
+<script src="app.js"></script>
 </html>
