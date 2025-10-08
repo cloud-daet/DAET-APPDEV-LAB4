@@ -204,11 +204,11 @@ const LaundryInventory = {
 
     // Filter Laundry By Quantity
     filterLaundryByQty(threshold) {
-        let filteredUnclean = this.uncleanLaundry.filter(l => l.qty < threshold);
-        let filteredClean = this.cleanLaundry.filter(l => l.qty < threshold);
-        console.log(`Filtered Unclean Laundry with quantity less than ${threshold}:`);
+        let filteredUnclean = this.uncleanLaundry.filter(l => l.qty <= threshold);
+        let filteredClean = this.cleanLaundry.filter(l => l.qty <= threshold);
+        console.log(`Filtered Unclean Laundry with quantity less than or equal ${threshold}:`);
         console.table(filteredUnclean);
-        console.log(`Filtered Clean Laundry with quantity less than ${threshold}:`);
+        console.log(`Filtered Clean Laundry with quantity less than or equal ${threshold}:`);
         console.table(filteredClean);
     },
 
@@ -287,10 +287,53 @@ function checkInventory() {
 
 // DOM HANDLERS
 const laundryForm = document.getElementById("LaundryForm");
-const laundryControls = document.getElementById("laundryControls");
+const searchInput = document.getElementById("searchInput");
+const statusBtn = document.getElementById("statusBtn");
+const deleteBtn = document.getElementById("deleteBtn");
+const filterBtn = document.getElementById("filterBtn");
 const listDiv = document.getElementById("list");
 const summaryDiv = document.getElementById("summary");
 
+function renderLaundryList() {
+    listDiv.innerHTML = ""; // Clear existing content
+    function createTable(title, laundryArray) {
+        if (laundryArray.length === 0) {
+            return `<h3>${title}</h3><p>No entries.</p>`;
+        }
+        let tableHTML = `<h3>${title}</h3>`;
+        tableHTML += `
+            <table border="1">
+            <tr>
+                <th>Client Name</th>
+                <th>Kilos</th>
+                <th>Quantity (bags)</th>
+                <th>Status</th></tr>
+        `;
+        laundryArray.forEach(laundry => {
+            tableHTML += `
+                <tr>
+                    <td>${laundry.clientName}</td>
+                    <td>${laundry.kilos}</td>
+                    <td>${laundry.qty}</td>
+                    <td>${laundry.status}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `</table>`;
+        return tableHTML;
+    }
+
+    // Build both tables
+    const uncleanTable = createTable("🧺 Unclean Laundry", LaundryInventory.uncleanLaundry);
+    const cleanTable = createTable("✅ Clean Laundry", LaundryInventory.cleanLaundry);
+    listDiv.innerHTML = uncleanTable + "<br>" + cleanTable;
+}
+
+// Initial render
+renderLaundryList();
+
+// Handle form submission to add laundry
 laundryForm.addEventListener("submit", function(e) {
     e.preventDefault();
     const clientName = document.getElementById("clientName").value;
@@ -302,5 +345,42 @@ laundryForm.addEventListener("submit", function(e) {
     }
 
     LaundryInventory.addLaundry(clientName, totalKg);
+    laundryForm.reset();
+    renderLaundryList();
 });
 
+// Marks laundry as clean
+statusBtn.addEventListener("click", function() {
+    const clientName = searchInput.value.trim();
+    if (clientName==="") {
+        alert("Please enter a client name to mark as clean.");
+        return;
+    }
+    LaundryInventory.markLaundryAsClean(clientName);
+});
+
+// Deletes laundry entry
+deleteBtn.addEventListener("click", function() {
+    const clientName = searchInput.value.trim();
+    if (clientName==="") {
+        alert("Please enter a client name to delete.");
+        return;
+    }
+    LaundryInventory.deleteLaundry(clientName);
+});
+
+// Filters laundry by name or quantity (bags)
+filterBtn.addEventListener("click", function() {
+    const query = searchInput.value.trim();
+    if (query==="") {
+        alert("Please enter a something to filter.");
+        return;
+    }
+
+    const queryNum = parseInt(query);
+    if (!isNaN(queryNum)) {
+        LaundryInventory.filterLaundryByQty(queryNum);
+    } else {
+        LaundryInventory.filterLaundryByName(query);
+    }
+});
