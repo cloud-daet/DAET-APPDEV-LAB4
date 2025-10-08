@@ -379,6 +379,9 @@ laundryForm.addEventListener("submit", function(e) {
     if (isNaN(totalKg) || totalKg <= 0) {
         alert("Please enter a valid number for weight.");
         return;
+    } else if (clientName.trim() === "") {
+        alert("Please enter a client name.");
+        return;
     }
 
     LaundryInventory.addLaundry(clientName, totalKg);
