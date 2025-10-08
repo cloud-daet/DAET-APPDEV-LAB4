@@ -136,6 +136,7 @@ const LaundryInventory = {
         let laundry = this.uncleanLaundry.find(l => l.clientName === clientName);
         if (!laundry) {
             console.log(`No pending laundry found for ${clientName}.`);
+            alert(`No pending laundry found for ${clientName}.`);
             return;
         }
 
@@ -291,11 +292,11 @@ const searchInput = document.getElementById("searchInput");
 const statusBtn = document.getElementById("statusBtn");
 const deleteBtn = document.getElementById("deleteBtn");
 const filterBtn = document.getElementById("filterBtn");
-const listDiv = document.getElementById("list");
-const summaryDiv = document.getElementById("summary");
+const laundrylistDiv = document.getElementById("laundrylist");
+const matlistDiv = document.getElementById("matlist");
 
 function renderLaundryList() {
-    listDiv.innerHTML = ""; // Clear existing content
+    laundrylistDiv.innerHTML = ""; // Clear existing content
     function createTable(title, laundryArray) {
         if (laundryArray.length === 0) {
             return `<h3>${title}</h3><p>No entries.</p>`;
@@ -307,7 +308,8 @@ function renderLaundryList() {
                 <th>Client Name</th>
                 <th>Kilos</th>
                 <th>Quantity (bags)</th>
-                <th>Status</th></tr>
+                <th>Status</th>
+            </tr>
         `;
         laundryArray.forEach(laundry => {
             tableHTML += `
@@ -327,11 +329,46 @@ function renderLaundryList() {
     // Build both tables
     const uncleanTable = createTable("🧺 Unclean Laundry", LaundryInventory.uncleanLaundry);
     const cleanTable = createTable("✅ Clean Laundry", LaundryInventory.cleanLaundry);
-    listDiv.innerHTML = uncleanTable + "<br>" + cleanTable;
+    laundrylistDiv.innerHTML = uncleanTable + "<br>" + cleanTable;
+}
+
+function renderMaterialList() {
+    matlistDiv.innerHTML = ""; // Clear existing content
+    function createTable(title, itemArray) {
+        if (itemArray.length === 0) {
+            return `<h3>${title}</h3><p>No entries.</p>`;
+        }
+        let tableHTML = `<h3>${title}</h3>`;
+        tableHTML += `
+            <table border="1">
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Price (Php)</th>
+            </tr>
+        `;
+        itemArray.forEach(item => {
+            tableHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td>${item.price}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `</table>`;
+        return tableHTML;
+    }
+
+    // Build both tables
+    const matTable = createTable("🧴 Materials", MaterialInventory.materials);
+    matlistDiv.innerHTML = matTable;
 }
 
 // Initial render
 renderLaundryList();
+renderMaterialList();
 
 // Handle form submission to add laundry
 laundryForm.addEventListener("submit", function(e) {
@@ -357,6 +394,7 @@ statusBtn.addEventListener("click", function() {
         return;
     }
     LaundryInventory.markLaundryAsClean(clientName);
+    renderLaundryList();
 });
 
 // Deletes laundry entry
@@ -367,6 +405,7 @@ deleteBtn.addEventListener("click", function() {
         return;
     }
     LaundryInventory.deleteLaundry(clientName);
+    renderLaundryList();
 });
 
 // Filters laundry by name or quantity (bags)
@@ -383,4 +422,5 @@ filterBtn.addEventListener("click", function() {
     } else {
         LaundryInventory.filterLaundryByName(query);
     }
+    renderLaundryList();
 });

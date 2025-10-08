@@ -22,11 +22,28 @@
     </div>
     
     <!-- Displays table of laundry entries -->
-    <div id="list"></div> 
-    <!-- Idk what to put here yet -->
-    <div id="summary"></div> 
+    <div id="laundrylist"></div> 
 
     <br>
+
+    <form id ="MaterialForm">
+        <input type="text" id="itemName" placeholder="Item Name" required>
+        <input type="number" id="itemQty" placeholder="Item Quantity" required>
+        <input type="number" id="itemPrice" placeholder="Item Price" required step="0.01">
+        <button type="submit">Add Item</button>
+    </form>
+    <div id = "MaterialControls">
+        <input type="text" id="mat_searchInput" placeholder="Search item">
+        <button id="deleteBtn">Delete Item</button>
+        <button id="filterBtn">Filter</button>
+        <br>
+        <input type="text" id="mat_searchInput2" placeholder="Item to update">
+        <input type="number" id="mat_numInput" placeholder="Enter Number" step="0.01">
+        <button id="updPriceBtn">Update Price</button>
+        <button id="addToBtn">Add to Existing</button>
+    </div>
+
+    <div id="matlist"></div> 
     
 </body>
 <script src="app.js"></script>
