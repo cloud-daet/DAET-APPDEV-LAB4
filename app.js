@@ -4,7 +4,7 @@ const MAX_WEIGHT = 7;
 const MaterialInventory = {
     // Array to hold materials
     materials: [ 
-        { name: "Detergent", qty: 4, price: 15 },
+        { name: "Detergent", qty: 20, price: 15 },
         { name: "Fabric Conditioner", qty: 20, price: 8 },
         { name: "Laundry Bag", qty: 20, price: 5 },
     ],
