@@ -356,7 +356,6 @@ const matAddToBtn = document.getElementById("addToBtn");
 const matSortNameBtn = document.getElementById("mat_sortNameBtn");
 const matSortQtyBtn = document.getElementById("mat_sortQtyBtn");
 const matSortPrcBtn = document.getElementById("mat_sortPrcBtn");
-const matResetBtn = document.getElementById("mat_reset");
 const totalItemsSpan = document.getElementById("mat_totalItems");
 const totalQtySpan = document.getElementById("mat_totalQty");
 const totalValueSpan = document.getElementById("mat_totalValue");
@@ -674,3 +673,6 @@ matSortPrcBtn.addEventListener("click", function() {
     }
     renderAll();
 });
+
+// da caffeine aint helping no more
+// overclocked my brain
