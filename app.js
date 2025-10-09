@@ -73,9 +73,31 @@ const MaterialInventory = {
     },
 
     // Sort Materials by Quantity
-    sortMaterialsByQty() {
+    sortMaterialsByQtyDOWN() {
+        this.materials.sort((a, b) => b.qty - a.qty);
+        console.log("Materials sorted by quantity (descending).");
+    },
+
+    sortMaterialsByQtyUP() {
         this.materials.sort((a, b) => a.qty - b.qty);
-        console.log("Materials sorted by quantity.");
+        console.log("Materials sorted by quantity (ascending).");
+    },
+
+    // Sort Materials by Name
+    sortMaterialsByName() {
+        this.materials.sort((a, b) => a.name.localeCompare(b.name));
+        console.log("Materials sorted by name.");
+    },
+
+    // Sort Materials by Price  
+    sortMaterialsByPriceDOWN() {
+        this.materials.sort((a, b) => a.price - b.price);
+        console.log("Materials sorted by price.");
+    },
+
+    sortMaterialsByPriceUP() {
+        this.materials.sort((a, b) => b.price - a.price);
+        console.log("Materials sorted by price.");
     },
 
     // Filter By Quantity
@@ -89,6 +111,12 @@ const MaterialInventory = {
     filterMaterialsByName(name) {
         let filtered = this.materials.filter(m => m.name.toLowerCase().includes(name.toLowerCase()));
         console.log(`Filtered Materials by name "${name}":`);
+        console.table(filtered);
+    },
+
+    filterMaterialsByPrice(price) {
+        let filtered = this.materials.filter(m => m.price <= price);
+        console.log(`Materials with price less than or equal to ${price}:`);
         console.table(filtered);
     },
 
@@ -179,11 +207,18 @@ const LaundryInventory = {
         console.log("Laundry sorted by client name.");
     },
     
-    // Sort Laundry By Quantity
-    sortLaundryByQty() {
+    // Sort Laundry By Quantity Descending
+    sortLaundryByQtyDOWN() {
         this.uncleanLaundry.sort((a, b) => a.qty - b.qty);
         this.cleanLaundry.sort((a, b) => a.qty - b.qty);
-        console.log("Laundry sorted by quantity.");
+        console.log("Laundry sorted by quantity. Descending.");
+    },
+
+    // Sort Laundry By Quantity Ascending
+    sortLaundryByQtyUP() {
+        this.uncleanLaundry.sort((a, b) => b.qty - a.qty);
+        this.cleanLaundry.sort((a, b) => b.qty - a.qty);
+        console.log("Laundry sorted by quantity. Ascending.");
     },
     
     // Sort Laundry By Status
@@ -287,12 +322,27 @@ function checkInventory() {
 }
 
 // DOM HANDLERS
+//LAUNDRY INVENTORY
 const laundryForm = document.getElementById("LaundryForm");
 const searchInput = document.getElementById("searchInput");
 const statusBtn = document.getElementById("statusBtn");
 const deleteBtn = document.getElementById("deleteBtn");
 const filterBtn = document.getElementById("filterBtn");
 const laundrylistDiv = document.getElementById("laundrylist");
+
+//MATERIAL INVENTORY
+const matForm = document.getElementById("MaterialForm");
+const matSearchInput = document.getElementById("mat_searchInput");
+const matDeleteBtn = document.getElementById("mat_deleteBtn");
+const matFilterBtn = document.getElementById("mat_filterBtn");
+const matSearchInput2 = document.getElementById("mat_searchInput2");
+const matNumInput = document.getElementById("mat_numInput");
+const matUpdatePrcBtn = document.getElementById("updPriceBtn");
+const matAddToBtn = document.getElementById("addToBtn");
+const matSortNameBtn = document.getElementById("mat_sortNameBtn");
+const matSortQtyBtn = document.getElementById("mat_sortQtyBtn");
+const matSortPrcBtn = document.getElementById("mat_sortPrcBtn");
+const matResetBtn = document.getElementById("mat_reset");
 const matlistDiv = document.getElementById("matlist");
 
 function renderLaundryList() {
@@ -330,6 +380,7 @@ function renderLaundryList() {
     const uncleanTable = createTable("🧺 Unclean Laundry", LaundryInventory.uncleanLaundry);
     const cleanTable = createTable("✅ Clean Laundry", LaundryInventory.cleanLaundry);
     laundrylistDiv.innerHTML = uncleanTable + "<br>" + cleanTable;
+    LaundryInventory.displayLaundry();
 }
 
 function renderMaterialList() {
@@ -364,11 +415,14 @@ function renderMaterialList() {
     // Build both tables
     const matTable = createTable("🧴 Materials", MaterialInventory.materials);
     matlistDiv.innerHTML = matTable;
+    MaterialInventory.displayMaterials();
 }
 
 // Initial render
 renderLaundryList();
 renderMaterialList();
+
+// --- LAUNDRY EVENTS ---
 
 // Handle form submission to add laundry
 laundryForm.addEventListener("submit", function(e) {
@@ -426,4 +480,134 @@ filterBtn.addEventListener("click", function() {
         LaundryInventory.filterLaundryByName(query);
     }
     renderLaundryList();
+});
+
+// --- MATERIAL EVENTS ---
+
+matForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const itemName = document.getElementById("itemName").value.trim();
+    const itemQty = parseInt(document.getElementById("itemQty").value);
+    const itemPrice = parseFloat(document.getElementById("itemPrice").value);
+
+    if (itemName === "") {
+        alert("Please enter an item name.");
+        return;
+    }
+
+    if (isNaN(itemQty) || itemQty <= 0) {
+        alert("Please enter a valid quantity.");
+        return;
+    }  
+
+    if (isNaN(itemPrice) || itemPrice <= 0) {
+        alert("Please enter a valid price.");
+        return;
+    }
+    // Check if item already exists
+    const existingItem = MaterialInventory.materials.find(m => m.name.toLowerCase() === itemName.toLowerCase());
+    if (existingItem) {
+        MaterialInventory.addToMaterial(existingItem.name, itemQty);
+        MaterialInventory.updateMaterialPrice(existingItem.name, itemPrice);
+    } else {
+        MaterialInventory.addMaterial(itemName, itemQty, itemPrice);
+    }
+    matForm.reset();
+    renderMaterialList();
+});
+
+matDeleteBtn.addEventListener("click", function() {
+    const itemName = matSearchInput.value.trim();
+    if (itemName === "") {
+        alert("Please enter an item name to delete.");
+        return;
+    }
+    MaterialInventory.deleteMaterial(itemName);
+    renderMaterialList();
+    itemName.reset;
+});
+
+matFilterBtn.addEventListener("click", function() {
+    const query = matSearchInput.value.trim();
+    if (query === "") {
+        alert("Please enter something to filter.");
+        return;
+    }
+    const queryNum = parseInt(query);
+    const queryFloat = parseFloat(query);
+    if (!isNaN(queryNum)) {
+        if (queryNum !== queryFloat) {
+            alert("Filtering by price (decimal) instead of quantity (whole number).");
+            MaterialInventory.filterMaterialsByPrice(queryFloat);
+            renderMaterialList();
+        } else {
+            alert("Filtering by quantity (whole number).");
+            MaterialInventory.filterMaterialsByQty(queryNum);
+            renderMaterialList();
+        }
+    } else {
+        MaterialInventory.filterMaterialsByName(query);
+        renderMaterialList();
+    }
+});
+
+matUpdatePrcBtn.addEventListener("click", function() {
+    const itemName = matSearchInput2.value.trim();
+    const newPrice = parseFloat(matNumInput.value);
+    if (itemName === "") {
+        alert("Please enter an item name to update.");
+        return;
+    }
+    if (isNaN(newPrice) || newPrice <= 0) {
+        alert("Please enter a valid price.");
+        return;
+    }
+    MaterialInventory.updateMaterialPrice(itemName, newPrice);
+    renderMaterialList();
+    matForm.reset();
+});
+
+matAddToBtn.addEventListener("click", function() {
+    const itemName = matSearchInput2.value.trim();
+    const additionalQty = parseInt(matNumInput.value);
+    if (itemName === "") {
+        alert("Please enter an item name to add to.");
+        return;
+    }
+    if (isNaN(additionalQty) || additionalQty <= 0) {
+        alert("Please enter a valid quantity.");
+        return;
+    }
+    MaterialInventory.addToMaterial(itemName, additionalQty);
+    renderMaterialList();
+    matForm.reset();
+});
+
+matSortNameBtn.addEventListener("click", function() {
+    MaterialInventory.sortMaterialsByName();
+    renderMaterialList();
+});
+
+// Sort by Quantity, Toggle Asc/Desc
+matSortQtyBtn.addEventListener("click", function() {
+    if (matSortQtyBtn.textContent === "Sort by Quantity ▲") {
+        MaterialInventory.sortMaterialsByQtyDOWN();
+        matSortQtyBtn.textContent = "Sort by Quantity ▼";
+    } else {
+        MaterialInventory.sortMaterialsByQtyUP();
+        matSortQtyBtn.textContent = "Sort by Quantity ▲";
+    }
+    renderMaterialList();
+});
+
+// Sort by Price, Toggle Asc/Desc
+matSortPrcBtn.addEventListener("click", function() {
+    if (matSortPrcBtn.textContent === "Sort by Price ▲") {
+        MaterialInventory.sortMaterialsByPriceDOWN();
+        matSortPrcBtn.textContent = "Sort by Price ▼";
+    } else {
+        MaterialInventory.sortMaterialsByPriceUP();
+        matSortPrcBtn.textContent = "Sort by Price ▲";
+    }
+    renderMaterialList();
 });
