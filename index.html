@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f5f5f5; text-align: left; }
+</style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,8 +43,8 @@
     </form>
     <div id = "MaterialControls">
         <input type="text" id="mat_searchInput" placeholder="Search item">
-        <button id="deleteBtn">Delete Item</button>
-        <button id="filterBtn">Filter</button>
+        <button id="mat_deleteBtn">Delete Item</button>
+        <button id="mat_filterBtn">Filter</button>
         <br>
         <input type="text" id="mat_searchInput2" placeholder="Item to update">
         <input type="number" id="mat_numInput" placeholder="Enter Number" step="0.01">
