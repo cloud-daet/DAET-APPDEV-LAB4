@@ -122,8 +122,13 @@ const MaterialInventory = {
 
     // Check Stock
     checkInventory() {
+        let totalItems = this.materials.length;
+        console.log(`Total different items in stock: ${totalItems}`);
+        let totalValue = this.materials.reduce((sum, m) => sum + (m.qty * m.price), 0);
+        console.log(`Total inventory value: $${totalValue.toFixed(2)}`);
         let totalMaterials = this.materials.reduce((sum, m) => sum + m.qty, 0);
         console.log(`Total items in stock: ${totalMaterials}`);
+        return [totalItems, totalMaterials, totalValue.toFixed(2)];
     },
 };
 
@@ -254,6 +259,7 @@ const LaundryInventory = {
         let totalClean = this.cleanLaundry.reduce((sum, l) => sum + l.qty, 0);
         console.log(`Total unclean laundry bags: ${totalUnclean}`);
         console.log(`Total clean laundry bags: ${totalClean}`);
+        return [totalUnclean, totalClean, totalUnclean + totalClean];
     },
 
     // Checkout Cleaned Laundry
@@ -312,6 +318,7 @@ const LaundryInventory = {
     }
 };
 
+// for testing in console, prolly deprecated
 function checkInventory() {
   console.log("\n=== FULL INVENTORY ===");
   MaterialInventory.displayMaterials();
@@ -319,18 +326,25 @@ function checkInventory() {
   MaterialInventory.checkInventory();
   LaundryInventory.checkLaundryInventory();
   console.log("========================\n");
-}
+} 
 
-// DOM HANDLERS
-//LAUNDRY INVENTORY
+// --- DOM CONSTANTS ---
+
+//LAUNDRY INVENTORY CONSTANTS
 const laundryForm = document.getElementById("LaundryForm");
 const searchInput = document.getElementById("searchInput");
 const statusBtn = document.getElementById("statusBtn");
 const deleteBtn = document.getElementById("deleteBtn");
 const filterBtn = document.getElementById("filterBtn");
+const sortClientBtn = document.getElementById("sortNameBtn");
+const sortQtyBtn = document.getElementById("sortQtyBtn");
+// const sortStatusBtn = document.getElementById("sortStatusBtn");
 const laundrylistDiv = document.getElementById("laundrylist");
+const totalEntriesSpan = document.getElementById("totalEntries");
+const totalUncleanSpan = document.getElementById("totalUnclean");
+const totalCleanSpan = document.getElementById("totalClean");
 
-//MATERIAL INVENTORY
+//MATERIAL INVENTORY CONSTANTS
 const matForm = document.getElementById("MaterialForm");
 const matSearchInput = document.getElementById("mat_searchInput");
 const matDeleteBtn = document.getElementById("mat_deleteBtn");
@@ -343,8 +357,12 @@ const matSortNameBtn = document.getElementById("mat_sortNameBtn");
 const matSortQtyBtn = document.getElementById("mat_sortQtyBtn");
 const matSortPrcBtn = document.getElementById("mat_sortPrcBtn");
 const matResetBtn = document.getElementById("mat_reset");
+const totalItemsSpan = document.getElementById("mat_totalItems");
+const totalQtySpan = document.getElementById("mat_totalQty");
+const totalValueSpan = document.getElementById("mat_totalValue");
 const matlistDiv = document.getElementById("matlist");
 
+// --- RENDER FUNCTIONS ---
 function renderLaundryList() {
     laundrylistDiv.innerHTML = ""; // Clear existing content
     function createTable(title, laundryArray) {
@@ -418,9 +436,33 @@ function renderMaterialList() {
     MaterialInventory.displayMaterials();
 }
 
+// --- UPDATE SUMMARY ---
+function updateLaundrySummary() {
+    const [totalUnclean, totalClean, totalEntries] = LaundryInventory.checkLaundryInventory();
+    totalEntriesSpan.textContent = totalEntries;
+    totalUncleanSpan.textContent = totalUnclean;
+    totalCleanSpan.textContent = totalClean;
+}
+
+function updateMaterialSummary() {
+    const [totalItems, totalQty, totalValue] = MaterialInventory.checkInventory();
+    totalItemsSpan.textContent = totalItems;
+    totalQtySpan.textContent = totalQty;
+    totalValueSpan.textContent = totalValue;
+}
+
+function renderAll() {
+    renderLaundryList();
+    renderMaterialList();
+    updateLaundrySummary();
+    updateMaterialSummary();
+}
+
 // Initial render
 renderLaundryList();
 renderMaterialList();
+updateLaundrySummary();
+updateMaterialSummary();
 
 // --- LAUNDRY EVENTS ---
 
@@ -440,7 +482,7 @@ laundryForm.addEventListener("submit", function(e) {
 
     LaundryInventory.addLaundry(clientName, totalKg);
     laundryForm.reset();
-    renderLaundryList();
+    renderAll();
 });
 
 // Marks laundry as clean
@@ -451,7 +493,7 @@ statusBtn.addEventListener("click", function() {
         return;
     }
     LaundryInventory.markLaundryAsClean(clientName);
-    renderLaundryList();
+    renderAll();
 });
 
 // Deletes laundry entry
@@ -462,7 +504,7 @@ deleteBtn.addEventListener("click", function() {
         return;
     }
     LaundryInventory.deleteLaundry(clientName);
-    renderLaundryList();
+    renderAll();
 });
 
 // Filters laundry by name or quantity (bags)
@@ -479,11 +521,29 @@ filterBtn.addEventListener("click", function() {
     } else {
         LaundryInventory.filterLaundryByName(query);
     }
-    renderLaundryList();
+    renderAll();
+});
+
+// Sort by Client Name
+sortClientBtn.addEventListener("click", function() {
+    LaundryInventory.sortLaundryByClientName();
+    renderAll();
+});
+
+// Sort by Quantity, Toggle Asc/Desc
+sortQtyBtn.addEventListener("click", function() {
+    if (sortQtyBtn.textContent === "Sort by Quantity ▲") { 
+        LaundryInventory.sortLaundryByQtyDOWN();
+        sortQtyBtn.textContent = "Sort by Quantity ▼";
+    } else {
+        LaundryInventory.sortLaundryByQtyUP();
+        sortQtyBtn.textContent = "Sort by Quantity ▲";
+    }
+    renderAll();
 });
 
 // --- MATERIAL EVENTS ---
-
+// Handle form submission to add material
 matForm.addEventListener("submit", function(e) {
     e.preventDefault();
     const itemName = document.getElementById("itemName").value.trim();
@@ -513,9 +573,10 @@ matForm.addEventListener("submit", function(e) {
         MaterialInventory.addMaterial(itemName, itemQty, itemPrice);
     }
     matForm.reset();
-    renderMaterialList();
+    renderAll();
 });
 
+// Deletes material entry
 matDeleteBtn.addEventListener("click", function() {
     const itemName = matSearchInput.value.trim();
     if (itemName === "") {
@@ -523,10 +584,11 @@ matDeleteBtn.addEventListener("click", function() {
         return;
     }
     MaterialInventory.deleteMaterial(itemName);
-    renderMaterialList();
+    renderAll();
     itemName.reset;
 });
 
+// Filters material by name, quantity, or price
 matFilterBtn.addEventListener("click", function() {
     const query = matSearchInput.value.trim();
     if (query === "") {
@@ -539,18 +601,17 @@ matFilterBtn.addEventListener("click", function() {
         if (queryNum !== queryFloat) {
             alert("Filtering by price (decimal) instead of quantity (whole number).");
             MaterialInventory.filterMaterialsByPrice(queryFloat);
-            renderMaterialList();
         } else {
             alert("Filtering by quantity (whole number).");
             MaterialInventory.filterMaterialsByQty(queryNum);
-            renderMaterialList();
         }
     } else {
         MaterialInventory.filterMaterialsByName(query);
-        renderMaterialList();
     }
+    renderAll();
 });
 
+// Updates material price
 matUpdatePrcBtn.addEventListener("click", function() {
     const itemName = matSearchInput2.value.trim();
     const newPrice = parseFloat(matNumInput.value);
@@ -563,10 +624,11 @@ matUpdatePrcBtn.addEventListener("click", function() {
         return;
     }
     MaterialInventory.updateMaterialPrice(itemName, newPrice);
-    renderMaterialList();
+    renderAll();
     matForm.reset();
 });
 
+// Adds quantity to existing material
 matAddToBtn.addEventListener("click", function() {
     const itemName = matSearchInput2.value.trim();
     const additionalQty = parseInt(matNumInput.value);
@@ -579,13 +641,14 @@ matAddToBtn.addEventListener("click", function() {
         return;
     }
     MaterialInventory.addToMaterial(itemName, additionalQty);
-    renderMaterialList();
+    renderAll();
     matForm.reset();
 });
 
+// Sort by Name
 matSortNameBtn.addEventListener("click", function() {
     MaterialInventory.sortMaterialsByName();
-    renderMaterialList();
+    renderAll();
 });
 
 // Sort by Quantity, Toggle Asc/Desc
@@ -597,7 +660,7 @@ matSortQtyBtn.addEventListener("click", function() {
         MaterialInventory.sortMaterialsByQtyUP();
         matSortQtyBtn.textContent = "Sort by Quantity ▲";
     }
-    renderMaterialList();
+    renderAll();
 });
 
 // Sort by Price, Toggle Asc/Desc
@@ -609,5 +672,5 @@ matSortPrcBtn.addEventListener("click", function() {
         MaterialInventory.sortMaterialsByPriceUP();
         matSortPrcBtn.textContent = "Sort by Price ▲";
     }
-    renderMaterialList();
+    renderAll();
 });
