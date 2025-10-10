@@ -4,7 +4,7 @@ const MAX_WEIGHT = 7;
 const MaterialInventory = {
     // Array to hold materials
     materials: [ 
-        { name: "Detergent", qty: 20, price: 15 },
+        { name: "Detergent", qty: 14, price: 15 },
         { name: "Fabric Conditioner", qty: 20, price: 8 },
         { name: "Laundry Bag", qty: 20, price: 5 },
     ],
@@ -102,9 +102,10 @@ const MaterialInventory = {
 
     // Filter By Quantity
     filterMaterialsByQty(threshold) {
-        let filtered = this.materials.filter(m => m.qty < threshold);
+        let filtered = this.materials.filter(m => m.qty <= threshold);
         console.log(`Materials with quantity less than ${threshold}:`);
         console.table(filtered);
+        return filtered;
     },
 
     // Filter By Name
@@ -112,12 +113,14 @@ const MaterialInventory = {
         let filtered = this.materials.filter(m => m.name.toLowerCase().includes(name.toLowerCase()));
         console.log(`Filtered Materials by name "${name}":`);
         console.table(filtered);
+        return filtered;
     },
 
     filterMaterialsByPrice(price) {
         let filtered = this.materials.filter(m => m.price <= price);
         console.log(`Materials with price less than or equal to ${price}:`);
         console.table(filtered);
+        return filtered;
     },
 
     // Check Stock
@@ -241,6 +244,7 @@ const LaundryInventory = {
         console.table(filteredUnclean);
         console.log(`Filtered Clean Laundry by client name "${clientName}":`);
         console.table(filteredClean);
+        return [filteredUnclean, filteredClean];
     },
 
     // Filter Laundry By Quantity
@@ -251,15 +255,17 @@ const LaundryInventory = {
         console.table(filteredUnclean);
         console.log(`Filtered Clean Laundry with quantity less than or equal ${threshold}:`);
         console.table(filteredClean);
+        return [filteredUnclean, filteredClean];
     },
 
     // Display Laundry Inventory Count
     checkLaundryInventory() {
         let totalUnclean = this.uncleanLaundry.reduce((sum, l) => sum + l.qty, 0);
         let totalClean = this.cleanLaundry.reduce((sum, l) => sum + l.qty, 0);
+        let totalEntries = this.uncleanLaundry.length + this.cleanLaundry.length;
         console.log(`Total unclean laundry bags: ${totalUnclean}`);
         console.log(`Total clean laundry bags: ${totalClean}`);
-        return [totalUnclean, totalClean, totalUnclean + totalClean];
+        return [totalUnclean, totalClean, totalEntries];
     },
 
     // Checkout Cleaned Laundry
@@ -338,7 +344,7 @@ const deleteBtn = document.getElementById("deleteBtn");
 const filterBtn = document.getElementById("filterBtn");
 const sortClientBtn = document.getElementById("sortNameBtn");
 const sortQtyBtn = document.getElementById("sortQtyBtn");
-// const sortStatusBtn = document.getElementById("sortStatusBtn");
+const ResetBtn = document.getElementById("resetBtn");
 const laundrylistDiv = document.getElementById("laundrylist");
 const totalEntriesSpan = document.getElementById("totalEntries");
 const totalUncleanSpan = document.getElementById("totalUnclean");
@@ -356,14 +362,24 @@ const matAddToBtn = document.getElementById("addToBtn");
 const matSortNameBtn = document.getElementById("mat_sortNameBtn");
 const matSortQtyBtn = document.getElementById("mat_sortQtyBtn");
 const matSortPrcBtn = document.getElementById("mat_sortPrcBtn");
+const matResetBtn = document.getElementById("mat_resetBtn");
 const totalItemsSpan = document.getElementById("mat_totalItems");
 const totalQtySpan = document.getElementById("mat_totalQty");
 const totalValueSpan = document.getElementById("mat_totalValue");
 const matlistDiv = document.getElementById("matlist");
 
 // --- RENDER FUNCTIONS ---
-function renderLaundryList() {
+function renderLaundryList(filterDat) {
     laundrylistDiv.innerHTML = ""; // Clear existing content
+
+    let uncleanList, cleanList;
+    if (filterDat) {
+        [uncleanList, cleanList] = filterDat; // use filtered
+    } else {
+        uncleanList = LaundryInventory.uncleanLaundry;
+        cleanList = LaundryInventory.cleanLaundry;
+    }
+
     function createTable(title, laundryArray) {
         if (laundryArray.length === 0) {
             return `<h3>${title}</h3><p>No entries.</p>`;
@@ -394,14 +410,15 @@ function renderLaundryList() {
     }
 
     // Build both tables
-    const uncleanTable = createTable("🧺 Unclean Laundry", LaundryInventory.uncleanLaundry);
-    const cleanTable = createTable("✅ Clean Laundry", LaundryInventory.cleanLaundry);
+    const uncleanTable = createTable("🧺 Unclean Laundry", uncleanList);
+    const cleanTable = createTable("✅ Clean Laundry", cleanList);
     laundrylistDiv.innerHTML = uncleanTable + "<br>" + cleanTable;
     LaundryInventory.displayLaundry();
 }
 
-function renderMaterialList() {
+function renderMaterialList(filterDat) {
     matlistDiv.innerHTML = ""; // Clear existing content
+    const matData = filterDat || MaterialInventory.materials;
     function createTable(title, itemArray) {
         if (itemArray.length === 0) {
             return `<h3>${title}</h3><p>No entries.</p>`;
@@ -430,7 +447,7 @@ function renderMaterialList() {
     }
 
     // Build both tables
-    const matTable = createTable("🧴 Materials", MaterialInventory.materials);
+    const matTable = createTable("🧴 Materials", matData);
     matlistDiv.innerHTML = matTable;
     MaterialInventory.displayMaterials();
 }
@@ -513,14 +530,16 @@ filterBtn.addEventListener("click", function() {
         alert("Please enter a something to filter.");
         return;
     }
-
+    
     const queryNum = parseInt(query);
     if (!isNaN(queryNum)) {
-        LaundryInventory.filterLaundryByQty(queryNum);
+        const filtered = LaundryInventory.filterLaundryByQty(queryNum);
+        renderLaundryList(filtered);
     } else {
-        LaundryInventory.filterLaundryByName(query);
+        const filtered = LaundryInventory.filterLaundryByName(query);
+        renderLaundryList(filtered);
     }
-    renderAll();
+    
 });
 
 // Sort by Client Name
@@ -539,6 +558,10 @@ sortQtyBtn.addEventListener("click", function() {
         sortQtyBtn.textContent = "Sort by Quantity ▲";
     }
     renderAll();
+});
+
+ResetBtn.addEventListener("click", function() {
+    renderLaundryList();
 });
 
 // --- MATERIAL EVENTS ---
@@ -599,16 +622,19 @@ matFilterBtn.addEventListener("click", function() {
     if (!isNaN(queryNum)) {
         if (queryNum !== queryFloat) {
             alert("Filtering by price (decimal) instead of quantity (whole number).");
-            MaterialInventory.filterMaterialsByPrice(queryFloat);
+            const filtered = MaterialInventory.filterMaterialsByPrice(queryFloat);
+            renderMaterialList(filtered);
         } else {
             alert("Filtering by quantity (whole number).");
-            MaterialInventory.filterMaterialsByQty(queryNum);
+            const filtered = MaterialInventory.filterMaterialsByQty(queryNum);
+            renderMaterialList(filtered);
         }
     } else {
-        MaterialInventory.filterMaterialsByName(query);
+        const filtered = MaterialInventory.filterMaterialsByName(query);
+        renderMaterialList(filtered);
     }
-    renderAll();
 });
+
 
 // Updates material price
 matUpdatePrcBtn.addEventListener("click", function() {
@@ -672,6 +698,10 @@ matSortPrcBtn.addEventListener("click", function() {
         matSortPrcBtn.textContent = "Sort by Price ▲";
     }
     renderAll();
+});
+
+matResetBtn.addEventListener("click", function() {
+    renderMaterialList();
 });
 
 // da caffeine aint helping no more
